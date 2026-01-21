@@ -56,3 +56,8 @@ exit /b 0
 popd
 mshta "javascript:var sh=new ActiveXObject('WScript.Shell');sh.Popup('[오류] 업로드 실패\n\n원인 예시:\n- Git 인증(로그인/토큰)\n- 네트워크/NAS\n- 원격 저장소 권한\n\n자세한 내용은 CMD 창의 출력 내용을 확인해주세요.',0,'실패',16);close();"
 exit /b 1
+
+pushd "\\nas\Cookapps Project\ON_AIR_UA\PlayableAdPlayer"
+"\\nas\Cookapps Project\ON_AIR_UA\기타\PortableGit\bin\git.exe" status -sb
+"\\nas\Cookapps Project\ON_AIR_UA\기타\PortableGit\bin\git.exe" push
+popd
