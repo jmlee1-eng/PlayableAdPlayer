@@ -442,12 +442,12 @@
 
                 adSelect.innerHTML = '<option value="">Select Ad</option>';
                 
-                let currentDate = '';
+                let currentFolder = '';
                 adsData.forEach((ad, index) => {
-                    if (ad.date !== currentDate) {
-                        currentDate = ad.date;
+                    if (ad.date !== currentFolder) {
+                        currentFolder = ad.date;
                         const group = document.createElement('optgroup');
-                        group.label = `📅 ${formatDate(ad.date)}`;
+                        group.label = `📁 ${ad.date}`;
                         adSelect.appendChild(group);
                     }
                     
@@ -465,16 +465,6 @@
                 adSelect.disabled = true;
                 adsData = [];
             }
-        }
-
-        function formatDate(dateStr) {
-            if (dateStr.length === 6) {
-                const day = dateStr.substring(0, 2);
-                const month = dateStr.substring(2, 4);
-                const year = dateStr.substring(4, 6);
-                return `${year}.${month}.${day}`;
-            }
-            return dateStr;
         }
 
         function parseUrlParams() {
