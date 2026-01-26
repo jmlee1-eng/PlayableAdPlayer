@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Playable Ad Player</title>
-    <link rel="icon" href="playableplayer.png" type="image/png" sizes="48x48">
+    <title>Playable Ad Preview</title>
+    <link rel="icon" type="image/png" href="playableplayer.png">
     <style>
         * {
             margin: 0;
@@ -77,6 +77,7 @@
             align-items: center;
             gap: 6px;
             transition: all 0.2s;
+            text-decoration: none;
         }
 
         .btn:hover {
@@ -227,6 +228,16 @@
             transform: translateX(-50%) translateY(0);
         }
 
+        .admin-link {
+            color: #888;
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .admin-link:hover {
+            color: #fff;
+        }
+
         @media (max-width: 768px) {
             .controls {
                 padding: 12px;
@@ -312,16 +323,15 @@
             </svg>
             New Tab
         </button>
+        <a href="admin.html" class="admin-link">⚙️ 파일 관리</a>
     </div>
 
     <div class="toast" id="toast">Link copied!</div>
 
     <script>
-        // ============================================
-        // 설정 (하드코딩 - 수정 불필요)
-        // ============================================
-        const GITHUB_OWNER = 'jmlee1-eng';
-        const GITHUB_REPO = 'PlayableAdPlayer';
+        // 설정
+        const API_URL = 'https://plyable-ads.jmlee1.workers.dev';
+        const PUBLIC_URL = 'https://pub-07ec31d9fe7c49db885eae0e7b2bdca4.r2.dev';
 
         const devices = {
             'iphone-se': { name: 'iPhone SE', width: 375, height: 667 },
@@ -336,8 +346,7 @@
         let currentAd = '';
         let currentDevice = 'iphone-14';
         let isLandscape = false;
-        let gamesData = [];
-        let adsData = [];
+        let allFiles = [];
 
         const gameSelect = document.getElementById('gameSelect');
         const adSelect = document.getElementById('adSelect');
@@ -349,123 +358,91 @@
         const toast = document.getElementById('toast');
 
         async function init() {
-            await loadGames();
+            await loadFiles();
             parseUrlParams();
             setupEventListeners();
         }
 
-        async function loadGames() {
+        async function loadFiles() {
             gameSelect.innerHTML = '<option value="">Loading...</option>';
             
             try {
-                const response = await fetch(
-                    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/ads`
-                );
+                const response = await fetch(`${API_URL}/list`);
+                allFiles = await response.json();
                 
-                if (!response.ok) throw new Error('Failed to load');
-                
-                const contents = await response.json();
-                
-                gamesData = contents
-                    .filter(item => item.type === 'dir')
-                    .map(item => ({
-                        name: item.name,
-                        path: item.path
-                    }));
+                // 게임 폴더 추출
+                const games = new Set();
+                allFiles.forEach(file => {
+                    const parts = file.key.split('/');
+                    if (parts.length > 1 && parts[0]) {
+                        games.add(parts[0]);
+                    }
+                });
 
                 gameSelect.innerHTML = '<option value="">Select Game</option>';
-                gamesData.forEach(game => {
+                Array.from(games).sort().forEach(game => {
                     const option = document.createElement('option');
-                    option.value = game.name;
-                    option.textContent = game.name;
+                    option.value = game;
+                    option.textContent = game;
                     gameSelect.appendChild(option);
                 });
 
             } catch (e) {
-                console.error('Failed to load games:', e);
+                console.error('Failed to load:', e);
                 gameSelect.innerHTML = '<option value="">Error loading</option>';
-                showToast('로드 실패');
             }
         }
 
-        async function loadAds(gameName) {
+        function loadAds(gameName) {
             if (!gameName) {
                 adSelect.innerHTML = '<option value="">Select Ad</option>';
                 adSelect.disabled = true;
-                adsData = [];
                 return;
             }
 
-            adSelect.innerHTML = '<option value="">Loading...</option>';
-            adSelect.disabled = true;
-
-            try {
-                const response = await fetch(
-                    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/ads/${gameName}`
-                );
-                
-                if (!response.ok) throw new Error('Failed to load');
-                
-                const dateFolders = await response.json();
-                
-                adsData = [];
-                
-                const folderPromises = dateFolders
-                    .filter(item => item.type === 'dir')
-                    .map(async (folder) => {
-                        const folderResponse = await fetch(
-                            `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/ads/${gameName}/${folder.name}`
-                        );
-                        
-                        if (!folderResponse.ok) return [];
-                        
-                        const files = await folderResponse.json();
-                        
-                        return files
-                            .filter(file => file.name.endsWith('.html'))
-                            .map(file => ({
-                                date: folder.name,
-                                file: file.name,
-                                path: `ads/${gameName}/${folder.name}/${file.name}`,
-                                sortKey: folder.name
-                            }));
-                    });
-
-                const results = await Promise.all(folderPromises);
-                adsData = results.flat();
-
-                adsData.sort((a, b) => {
-                    if (b.sortKey !== a.sortKey) {
-                        return b.sortKey.localeCompare(a.sortKey);
-                    }
-                    return a.file.localeCompare(b.file);
-                });
-
-                adSelect.innerHTML = '<option value="">Select Ad</option>';
-                
-                let currentFolder = '';
-                adsData.forEach((ad, index) => {
-                    if (ad.date !== currentFolder) {
-                        currentFolder = ad.date;
-                        const group = document.createElement('optgroup');
-                        group.label = `📁 ${ad.date}`;
-                        adSelect.appendChild(group);
-                    }
+            // 해당 게임의 폴더와 파일 추출
+            const folders = new Map(); // folderName -> [files]
+            
+            allFiles.forEach(file => {
+                if (file.key.startsWith(gameName + '/')) {
+                    const relativePath = file.key.slice(gameName.length + 1);
+                    const parts = relativePath.split('/');
                     
+                    if (parts.length >= 2 && parts[1].endsWith('.html')) {
+                        const folder = parts[0];
+                        const fileName = parts[1];
+                        
+                        if (!folders.has(folder)) {
+                            folders.set(folder, []);
+                        }
+                        folders.get(folder).push({ fileName, fullPath: file.key });
+                    }
+                }
+            });
+
+            adSelect.innerHTML = '<option value="">Select Ad</option>';
+            
+            // 폴더 내림차순 정렬
+            const sortedFolders = Array.from(folders.keys()).sort().reverse();
+            
+            sortedFolders.forEach(folder => {
+                const group = document.createElement('optgroup');
+                group.label = `📁 ${folder}`;
+                
+                // 파일 오름차순 정렬
+                const files = folders.get(folder).sort((a, b) => a.fileName.localeCompare(b.fileName));
+                
+                files.forEach(file => {
                     const option = document.createElement('option');
-                    option.value = `${ad.date}/${ad.file}`;
-                    option.textContent = ad.file;
-                    adSelect.appendChild(option);
+                    option.value = file.fullPath;
+                    option.textContent = file.fileName;
+                    group.appendChild(option);
                 });
+                
+                adSelect.appendChild(group);
+            });
 
-                adSelect.disabled = false;
-
-            } catch (e) {
-                console.error('Failed to load ads:', e);
-                adSelect.innerHTML = '<option value="">No ads found</option>';
-                adSelect.disabled = true;
-                adsData = [];
-            }
+            adSelect.disabled = false;
         }
 
         function parseUrlParams() {
@@ -488,23 +465,23 @@
             if (game) {
                 currentGame = game;
                 gameSelect.value = game;
-                loadAds(game).then(() => {
-                    if (ad) {
-                        currentAd = ad;
-                        adSelect.value = ad;
-                        loadAdPreview();
-                    }
-                });
+                loadAds(game);
+                
+                if (ad) {
+                    currentAd = ad;
+                    adSelect.value = ad;
+                    loadAdPreview();
+                }
             }
 
             updateDeviceSize();
         }
 
         function setupEventListeners() {
-            gameSelect.addEventListener('change', async (e) => {
+            gameSelect.addEventListener('change', (e) => {
                 currentGame = e.target.value;
                 currentAd = '';
-                await loadAds(currentGame);
+                loadAds(currentGame);
                 hidePreview();
                 updateUrl();
             });
@@ -543,17 +520,16 @@
             });
 
             document.getElementById('newTabBtn').addEventListener('click', () => {
-                if (currentGame && currentAd) {
-                    const adUrl = `ads/${currentGame}/${currentAd}`;
-                    window.open(adUrl, '_blank');
+                if (currentAd) {
+                    window.open(`${PUBLIC_URL}/${currentAd}`, '_blank');
                 }
             });
         }
 
         function loadAdPreview() {
-            if (!currentGame || !currentAd) return;
+            if (!currentAd) return;
 
-            const adUrl = `ads/${currentGame}/${currentAd}`;
+            const adUrl = `${PUBLIC_URL}/${currentAd}`;
             adFrame.src = adUrl;
             adFrame.style.display = 'block';
             emptyState.style.display = 'none';
