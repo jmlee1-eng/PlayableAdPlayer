@@ -180,6 +180,13 @@
             <button class="btn" onclick="showFolderModal()">📁 새 폴더</button>
             <button class="btn btn-success" onclick="assignMissingIds()">🔧 ID 일괄 생성</button>
             <button class="btn btn-danger" id="deleteBtn" style="display:none;" onclick="deleteSelected()">🗑️ 선택 삭제</button>
+            <div style="margin-left:auto; display:flex; gap:8px; align-items:center; font-size:13px; color:#888;">
+                <span>정렬:</span>
+                <select id="sortOrder" onchange="renderFiles()" style="background:#333; border:1px solid #444; color:#fff; padding:6px 10px; border-radius:4px; font-size:13px;">
+                    <option value="asc">오름차순</option>
+                    <option value="desc" selected>내림차순</option>
+                </select>
+            </div>
         </div>
 
         <div class="breadcrumb" id="breadcrumb">
@@ -285,6 +292,7 @@
 
         function renderFiles() {
             const fileList = document.getElementById('fileList');
+            const sortOrder = document.getElementById('sortOrder').value;
 
             if (allFiles.length === 0) {
                 fileList.innerHTML = '<div class="empty-state">파일이 없습니다<br><small style="color:#555">위 영역에 파일을 드래그하여 업로드하세요</small></div>';
@@ -302,48 +310,63 @@
                 else if (parts[0] && !parts[0].startsWith('.')) fileItems.push(file);
             });
 
-            let html = '';
-
-            // 폴더
-            Array.from(folders).sort().forEach(folder => {
-                html += `
-                    <div class="file-item">
-                        <input type="checkbox" class="checkbox" onchange="toggleSelect('${currentPath}${folder}/', this)">
-                        <div class="file-icon">📁</div>
-                        <div class="file-info">
-                            <div class="file-name" onclick="navigateTo('${currentPath}${folder}/')">${folder}</div>
-                            <div class="file-meta">폴더</div>
-                        </div>
-                        <div class="file-actions">
-                            <button class="btn" onclick="showRenameModal('${currentPath}${folder}/', '${folder}', 'folder')">이름 변경</button>
-                            <button class="btn" onclick="navigateTo('${currentPath}${folder}/')">열기</button>
-                        </div>
-                    </div>`;
+            // 폴더와 파일 합쳐서 정렬
+            let items = [];
+            
+            // 폴더 추가
+            Array.from(folders).forEach(folder => {
+                items.push({ type: 'folder', name: folder, key: currentPath + folder + '/' });
+            });
+            
+            // 파일 추가
+            fileItems.forEach(file => {
+                const fileName = file.key.split('/').pop();
+                items.push({ type: 'file', name: fileName, ...file });
             });
 
-            // 파일
-            fileItems.sort((a, b) => a.key.localeCompare(b.key)).forEach(file => {
-                const fileName = file.key.split('/').pop();
-                const size = formatSize(file.size);
-                const id = file.id || '';
-                const hasId = id ? 'ID: ' + id : '<span style="color:#f59e0b">ID 없음</span>';
-                const previewLink = id ? `index.html?id=${id}` : `index.html?id=${encodeURIComponent(file.key)}`;
-                
-                html += `
-                    <div class="file-item">
-                        <input type="checkbox" class="checkbox" onchange="toggleSelect('${file.key}', this)">
-                        <div class="file-icon">📄</div>
-                        <div class="file-info">
-                            <div class="file-name" onclick="window.open('${PUBLIC_URL}/${file.key}', '_blank')">${fileName}</div>
-                            <div class="file-meta">${size}</div>
-                            <div class="file-id">${hasId}</div>
-                        </div>
-                        <div class="file-actions">
-                            <button class="btn btn-primary" onclick="window.open('${previewLink}', '_blank')">미리보기</button>
-                            <button class="btn" onclick="showRenameModal('${file.key}', '${fileName}', 'file')">이름 변경</button>
-                            ${id ? `<button class="btn" onclick="copyIdLink('${id}')">ID 링크</button>` : ''}
-                        </div>
-                    </div>`;
+            // 통합 정렬
+            items.sort((a, b) => a.name.localeCompare(b.name));
+            if (sortOrder === 'desc') items.reverse();
+
+            let html = '';
+
+            items.forEach(item => {
+                if (item.type === 'folder') {
+                    html += `
+                        <div class="file-item">
+                            <input type="checkbox" class="checkbox" onchange="toggleSelect('${item.key}', this)">
+                            <div class="file-icon">📁</div>
+                            <div class="file-info">
+                                <div class="file-name" onclick="navigateTo('${item.key}')">${item.name}</div>
+                                <div class="file-meta">폴더</div>
+                            </div>
+                            <div class="file-actions">
+                                <button class="btn" onclick="showRenameModal('${item.key}', '${item.name}', 'folder')">이름 변경</button>
+                                <button class="btn" onclick="navigateTo('${item.key}')">열기</button>
+                            </div>
+                        </div>`;
+                } else {
+                    const size = formatSize(item.size);
+                    const id = item.id || '';
+                    const hasId = id ? 'ID: ' + id : '<span style="color:#f59e0b">ID 없음</span>';
+                    const previewLink = id ? `index.html?id=${id}` : `index.html?id=${encodeURIComponent(item.key)}`;
+                    
+                    html += `
+                        <div class="file-item">
+                            <input type="checkbox" class="checkbox" onchange="toggleSelect('${item.key}', this)">
+                            <div class="file-icon">📄</div>
+                            <div class="file-info">
+                                <div class="file-name" onclick="window.open('${PUBLIC_URL}/${item.key}', '_blank')">${item.name}</div>
+                                <div class="file-meta">${size}</div>
+                                <div class="file-id">${hasId}</div>
+                            </div>
+                            <div class="file-actions">
+                                <button class="btn btn-primary" onclick="window.open('${previewLink}', '_blank')">미리보기</button>
+                                <button class="btn" onclick="showRenameModal('${item.key}', '${item.name}', 'file')">이름 변경</button>
+                                ${id ? `<button class="btn" onclick="copyIdLink('${id}')">ID 링크</button>` : ''}
+                            </div>
+                        </div>`;
+                }
             });
 
             fileList.innerHTML = html || '<div class="empty-state">파일이 없습니다</div>';
