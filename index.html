@@ -15,88 +15,21 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: #1a1a1a;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
             color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        .controls {
+        /* 디바이스 + 툴바를 감싸는 컨테이너 */
+        .preview-wrapper {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 12px;
+            height: calc(100vh - 32px);
             padding: 16px;
-            background: #222;
-            border-bottom: 1px solid #333;
-            flex-wrap: wrap;
-        }
-
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .control-group label {
-            font-size: 12px;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        select {
-            background: #333;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            min-width: 160px;
-        }
-
-        select:hover {
-            border-color: #555;
-        }
-
-        select:focus {
-            outline: none;
-            border-color: #666;
-        }
-
-        .btn {
-            background: #333;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-
-        .btn:hover {
-            background: #444;
-            border-color: #555;
-        }
-
-        .btn svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        .preview-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            overflow: auto;
         }
 
         .device-frame {
@@ -104,9 +37,8 @@
             border: 2px solid #fff;
             border-radius: 32px;
             overflow: hidden;
-            position: relative;
-            transition: width 0.3s, height 0.3s;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            flex-shrink: 0;
         }
 
         .device-frame iframe {
@@ -128,67 +60,34 @@
         }
 
         .empty-state svg {
-            width: 64px;
-            height: 64px;
-            margin-bottom: 16px;
+            width: 48px;
+            height: 48px;
+            margin-bottom: 12px;
             opacity: 0.5;
         }
 
         .empty-state p {
-            font-size: 14px;
-        }
-
-        .footer {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            padding: 12px 16px;
-            background: #222;
-            border-top: 1px solid #333;
-            flex-wrap: wrap;
-        }
-
-        .link-display {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #333;
-            padding: 6px 12px;
-            border-radius: 6px;
             font-size: 13px;
-            max-width: 400px;
-            overflow: hidden;
         }
 
-        .link-display span {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            color: #aaa;
-        }
-
-        .link-display .btn {
-            padding: 4px 8px;
-            font-size: 12px;
-        }
-
-        .action-buttons {
-            position: fixed;
-            right: 24px;
-            top: 50%;
-            transform: translateY(-50%);
+        /* 툴바 - 디바이스 바로 옆에 고정 */
+        .toolbar {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
+            padding: 8px;
+            background: #222;
+            border-radius: 12px;
+            border: 1px solid #333;
+            flex-shrink: 0;
         }
 
-        .action-btn {
-            width: 44px;
-            height: 44px;
+        .toolbar-btn {
+            width: 42px;
+            height: 42px;
             background: #333;
             border: 1px solid #444;
-            border-radius: 50%;
+            border-radius: 8px;
             color: #fff;
             cursor: pointer;
             display: flex;
@@ -197,30 +96,161 @@
             transition: all 0.2s;
         }
 
-        .action-btn:hover {
+        .toolbar-btn:hover {
             background: #444;
             border-color: #555;
-            transform: scale(1.05);
         }
 
-        .action-btn svg {
+        .toolbar-btn svg {
             width: 20px;
             height: 20px;
         }
 
+        /* 메뉴 패널 */
+        .menu-panel {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 320px;
+            height: 100vh;
+            background: #222;
+            border-left: 1px solid #333;
+            transition: right 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .menu-panel.open {
+            right: 0;
+        }
+
+        .menu-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid #333;
+        }
+
+        .menu-header h2 {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .menu-close {
+            width: 32px;
+            height: 32px;
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .menu-close:hover {
+            color: #fff;
+        }
+
+        .menu-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .menu-section {
+            margin-bottom: 20px;
+        }
+
+        .menu-section label {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 6px;
+        }
+
+        .menu-section select {
+            width: 100%;
+            background: #333;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .menu-section select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .menu-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .menu-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 12px;
+            background: #333;
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .menu-action-btn:hover {
+            background: #444;
+        }
+
+        .menu-action-btn svg {
+            width: 20px;
+            height: 20px;
+            opacity: 0.7;
+        }
+
+        /* 오버레이 */
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 999;
+        }
+
+        .menu-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 토스트 */
         .toast {
             position: fixed;
-            bottom: 80px;
+            bottom: 24px;
             left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: #444;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
             color: #fff;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 8px;
             font-size: 14px;
             opacity: 0;
             transition: all 0.3s;
-            pointer-events: none;
+            z-index: 1001;
         }
 
         .toast.show {
@@ -228,125 +258,157 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        .admin-link {
-            color: #888;
-            text-decoration: none;
-            font-size: 13px;
-        }
-
-        .admin-link:hover {
-            color: #fff;
-        }
-
-        @media (max-width: 768px) {
-            .controls {
-                padding: 12px;
+        @media (max-width: 600px) {
+            .preview-wrapper {
                 gap: 8px;
+                padding: 8px;
             }
-
-            select {
-                min-width: 120px;
-                font-size: 13px;
-                padding: 6px 10px;
+            .toolbar {
+                padding: 6px;
             }
-
-            .action-buttons {
-                right: 12px;
+            .toolbar-btn {
+                width: 36px;
+                height: 36px;
             }
-
-            .preview-container {
-                padding: 12px;
+            .toolbar-btn svg {
+                width: 18px;
+                height: 18px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="controls">
-        <div class="control-group">
-            <label>Game</label>
-            <select id="gameSelect">
-                <option value="">Loading...</option>
-            </select>
-        </div>
-        <div class="control-group">
-            <label>Ad</label>
-            <select id="adSelect" disabled>
-                <option value="">Select Ad</option>
-            </select>
-        </div>
-        <div class="control-group">
-            <label>Device</label>
-            <select id="deviceSelect">
-                <option value="iphone-se">iPhone SE</option>
-                <option value="iphone-14" selected>iPhone 14</option>
-                <option value="iphone-15-pro-max">iPhone 15 Pro Max</option>
-                <option value="galaxy-s21">Galaxy S21</option>
-                <option value="galaxy-s23">Galaxy S23</option>
-                <option value="galaxy-z-flip">Galaxy Z Flip</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="preview-container">
+    <div class="preview-wrapper">
         <div class="device-frame" id="deviceFrame">
             <div class="empty-state" id="emptyState">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
-                <p>Select a game and ad to preview</p>
+                <p>메뉴에서 광고를 선택하세요</p>
             </div>
             <iframe id="adFrame" style="display: none;"></iframe>
         </div>
-    </div>
 
-    <div class="action-buttons">
-        <button class="action-btn" id="refreshBtn" title="Refresh">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-        </button>
-        <button class="action-btn" id="rotateBtn" title="Rotate">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m0 0a8.001 8.001 0 0115.356 2M4.582 9H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-        </button>
-    </div>
-
-    <div class="footer">
-        <div class="link-display">
-            <span id="currentLink">-</span>
-            <button class="btn" id="copyBtn">Copy</button>
+        <div class="toolbar">
+            <button class="toolbar-btn" id="menuBtn" title="메뉴">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+            <button class="toolbar-btn" id="refreshBtn" title="새로 고침">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+            </button>
+            <button class="toolbar-btn" id="rotateBtn" title="화면 회전">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m0 0a8.001 8.001 0 0115.356 2M4.582 9H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+            </button>
+            <button class="toolbar-btn" id="copyBtn" title="링크 복사">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+            </button>
+            <button class="toolbar-btn" id="fullscreenBtn" title="전체 화면">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+            </button>
+            <button class="toolbar-btn" id="adminBtn" title="파일 관리">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
         </div>
-        <button class="btn" id="newTabBtn">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-            New Tab
-        </button>
-        <a href="admin.html" class="admin-link">⚙️ 파일 관리</a>
     </div>
 
-    <div class="toast" id="toast">Link copied!</div>
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <div class="menu-panel" id="menuPanel">
+        <div class="menu-header">
+            <h2>메뉴</h2>
+            <button class="menu-close" id="menuClose">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="menu-content">
+            <div class="menu-section">
+                <label>Game (게임 드롭다운)</label>
+                <select id="gameSelect">
+                    <option value="">Loading...</option>
+                </select>
+            </div>
+            <div class="menu-section">
+                <label>AD (소재 파일 드롭다운)</label>
+                <select id="adSelect" disabled>
+                    <option value="">Select Ad</option>
+                </select>
+            </div>
+            <div class="menu-section">
+                <label>Device (기기 드롭다운)</label>
+                <select id="deviceSelect">
+                    <option value="iphone-se-3">iPhone SE 3</option>
+                    <option value="iphone-15-pro-max" selected>iPhone 15 Pro Max</option>
+                    <option value="ipad-11">iPad 11</option>
+                    <option value="galaxy-s23-ultra">Galaxy S23 Ultra</option>
+                    <option value="galaxy-a14">Galaxy A14</option>
+                    <option value="galaxy-z-fold-6-m">Galaxy Z Fold 6 (M)</option>
+                    <option value="galaxy-z-fold-6-c">Galaxy Z Fold 6 (C)</option>
+                </select>
+            </div>
+            <div class="menu-section">
+                <label>Actions</label>
+                <div class="menu-actions">
+                    <button class="menu-action-btn" id="menuRefreshBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        새로 고침
+                    </button>
+                    <button class="menu-action-btn" id="menuRotateBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m0 0a8.001 8.001 0 0115.356 2M4.582 9H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        화면 회전
+                    </button>
+                    <button class="menu-action-btn" id="menuCopyBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                        링크 복사
+                    </button>
+                    <button class="menu-action-btn" id="menuFullscreenBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
+                        전체 화면
+                    </button>
+                    <button class="menu-action-btn" id="menuAdminBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                        파일 관리
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
 
     <script>
-        // 설정
         const API_URL = 'https://plyable-ads.jmlee1.workers.dev';
         const PUBLIC_URL = 'https://pub-07ec31d9fe7c49db885eae0e7b2bdca4.r2.dev';
 
         const devices = {
-            'iphone-se': { name: 'iPhone SE', width: 375, height: 667 },
-            'iphone-14': { name: 'iPhone 14', width: 390, height: 844 },
-            'iphone-15-pro-max': { name: 'iPhone 15 Pro Max', width: 430, height: 932 },
-            'galaxy-s21': { name: 'Galaxy S21', width: 360, height: 800 },
-            'galaxy-s23': { name: 'Galaxy S23', width: 360, height: 780 },
-            'galaxy-z-flip': { name: 'Galaxy Z Flip', width: 360, height: 748 }
+            'iphone-se-3': { width: 375, height: 667 },
+            'iphone-15-pro-max': { width: 430, height: 932 },
+            'ipad-11': { width: 820, height: 1180 },
+            'galaxy-s23-ultra': { width: 384, height: 824 },
+            'galaxy-a14': { width: 360, height: 803 },
+            'galaxy-z-fold-6-m': { width: 690, height: 829 },
+            'galaxy-z-fold-6-c': { width: 345, height: 883 }
         };
 
-        let currentGame = '';
-        let currentAd = '';
-        let currentDevice = 'iphone-14';
+        let currentAdId = '';
+        let currentDevice = 'iphone-15-pro-max';
         let isLandscape = false;
         let allFiles = [];
+        let fileIdMap = {};
 
         const gameSelect = document.getElementById('gameSelect');
         const adSelect = document.getElementById('adSelect');
@@ -354,42 +416,42 @@
         const deviceFrame = document.getElementById('deviceFrame');
         const adFrame = document.getElementById('adFrame');
         const emptyState = document.getElementById('emptyState');
-        const currentLinkEl = document.getElementById('currentLink');
-        const toast = document.getElementById('toast');
+        const menuPanel = document.getElementById('menuPanel');
+        const menuOverlay = document.getElementById('menuOverlay');
 
         async function init() {
             await loadFiles();
             parseUrlParams();
             setupEventListeners();
+            updateDeviceSize();
         }
 
         async function loadFiles() {
             gameSelect.innerHTML = '<option value="">Loading...</option>';
-            
             try {
                 const response = await fetch(`${API_URL}/list`);
                 allFiles = await response.json();
                 
-                // 게임 폴더 추출
+                fileIdMap = {};
+                allFiles.forEach(file => {
+                    if (file.id) fileIdMap[file.id] = file;
+                });
+                
                 const games = new Set();
                 allFiles.forEach(file => {
                     const parts = file.key.split('/');
-                    if (parts.length > 1 && parts[0]) {
-                        games.add(parts[0]);
-                    }
+                    if (parts.length > 1 && parts[0]) games.add(parts[0]);
                 });
 
                 gameSelect.innerHTML = '<option value="">Select Game</option>';
                 Array.from(games).sort().forEach(game => {
-                    const option = document.createElement('option');
-                    option.value = game;
-                    option.textContent = game;
-                    gameSelect.appendChild(option);
+                    const opt = document.createElement('option');
+                    opt.value = game;
+                    opt.textContent = game;
+                    gameSelect.appendChild(opt);
                 });
-
             } catch (e) {
-                console.error('Failed to load:', e);
-                gameSelect.innerHTML = '<option value="">Error loading</option>';
+                gameSelect.innerHTML = '<option value="">Error</option>';
             }
         }
 
@@ -400,56 +462,45 @@
                 return;
             }
 
-            // 해당 게임의 폴더와 파일 추출
-            const folders = new Map(); // folderName -> [files]
-            
+            const folders = new Map();
             allFiles.forEach(file => {
                 if (file.key.startsWith(gameName + '/')) {
-                    const relativePath = file.key.slice(gameName.length + 1);
-                    const parts = relativePath.split('/');
-                    
+                    const rel = file.key.slice(gameName.length + 1);
+                    const parts = rel.split('/');
                     if (parts.length >= 2 && parts[1].endsWith('.html')) {
-                        const folder = parts[0];
-                        const fileName = parts[1];
-                        
-                        if (!folders.has(folder)) {
-                            folders.set(folder, []);
-                        }
-                        folders.get(folder).push({ fileName, fullPath: file.key });
+                        if (!folders.has(parts[0])) folders.set(parts[0], []);
+                        folders.get(parts[0]).push({ 
+                            fileName: parts[1], 
+                            fullPath: file.key,
+                            id: file.id || file.key
+                        });
                     }
                 }
             });
 
             adSelect.innerHTML = '<option value="">Select Ad</option>';
-            
-            // 폴더 내림차순 정렬
             const sortedFolders = Array.from(folders.keys()).sort().reverse();
             
             sortedFolders.forEach(folder => {
                 const group = document.createElement('optgroup');
                 group.label = `📁 ${folder}`;
-                
-                // 파일 오름차순 정렬
                 const files = folders.get(folder).sort((a, b) => a.fileName.localeCompare(b.fileName));
-                
-                files.forEach(file => {
-                    const option = document.createElement('option');
-                    option.value = file.fullPath;
-                    option.textContent = file.fileName;
-                    group.appendChild(option);
+                files.forEach(f => {
+                    const opt = document.createElement('option');
+                    opt.value = f.id;
+                    opt.textContent = f.fileName;
+                    opt.dataset.path = f.fullPath;
+                    opt.dataset.filename = f.fileName;
+                    group.appendChild(opt);
                 });
-                
                 adSelect.appendChild(group);
             });
-
             adSelect.disabled = false;
         }
 
         function parseUrlParams() {
             const params = new URLSearchParams(window.location.search);
-            
-            const game = params.get('game');
-            const ad = params.get('ad');
+            const adId = params.get('id');
             const device = params.get('device');
             const rotate = params.get('rotate');
 
@@ -457,42 +508,39 @@
                 currentDevice = device;
                 deviceSelect.value = device;
             }
+            if (rotate === 'landscape') isLandscape = true;
 
-            if (rotate === 'landscape') {
-                isLandscape = true;
-            }
-
-            if (game) {
-                currentGame = game;
+            if (adId && fileIdMap[adId]) {
+                const file = fileIdMap[adId];
+                const game = file.key.split('/')[0];
                 gameSelect.value = game;
                 loadAds(game);
-                
-                if (ad) {
-                    currentAd = ad;
-                    adSelect.value = ad;
-                    loadAdPreview();
-                }
+                currentAdId = adId;
+                adSelect.value = adId;
+                loadAdPreview();
             }
-
             updateDeviceSize();
         }
 
         function setupEventListeners() {
+            document.getElementById('menuBtn').addEventListener('click', () => {
+                menuPanel.classList.add('open');
+                menuOverlay.classList.add('open');
+            });
+            document.getElementById('menuClose').addEventListener('click', closeMenu);
+            menuOverlay.addEventListener('click', closeMenu);
+
             gameSelect.addEventListener('change', (e) => {
-                currentGame = e.target.value;
-                currentAd = '';
-                loadAds(currentGame);
+                loadAds(e.target.value);
+                currentAdId = '';
                 hidePreview();
                 updateUrl();
             });
 
             adSelect.addEventListener('change', (e) => {
-                currentAd = e.target.value;
-                if (currentAd) {
-                    loadAdPreview();
-                } else {
-                    hidePreview();
-                }
+                currentAdId = e.target.value;
+                if (currentAdId) loadAdPreview();
+                else hidePreview();
                 updateUrl();
             });
 
@@ -502,100 +550,92 @@
                 updateUrl();
             });
 
-            document.getElementById('refreshBtn').addEventListener('click', () => {
-                if (currentAd) {
-                    adFrame.src = adFrame.src;
-                }
-            });
+            document.getElementById('refreshBtn').addEventListener('click', refresh);
+            document.getElementById('rotateBtn').addEventListener('click', rotate);
+            document.getElementById('copyBtn').addEventListener('click', copyLink);
+            document.getElementById('fullscreenBtn').addEventListener('click', openFullscreen);
+            document.getElementById('adminBtn').addEventListener('click', () => location.href = 'admin.html');
 
-            document.getElementById('rotateBtn').addEventListener('click', () => {
-                isLandscape = !isLandscape;
-                updateDeviceSize();
-                updateUrl();
-            });
+            document.getElementById('menuRefreshBtn').addEventListener('click', () => { refresh(); closeMenu(); });
+            document.getElementById('menuRotateBtn').addEventListener('click', () => { rotate(); closeMenu(); });
+            document.getElementById('menuCopyBtn').addEventListener('click', () => { copyLink(); closeMenu(); });
+            document.getElementById('menuFullscreenBtn').addEventListener('click', () => { openFullscreen(); closeMenu(); });
+            document.getElementById('menuAdminBtn').addEventListener('click', () => location.href = 'admin.html');
 
-            document.getElementById('copyBtn').addEventListener('click', () => {
-                navigator.clipboard.writeText(window.location.href);
-                showToast('Link copied!');
-            });
+            window.addEventListener('resize', updateDeviceSize);
+        }
 
-            document.getElementById('newTabBtn').addEventListener('click', () => {
-                if (currentAd) {
-                    window.open(`${PUBLIC_URL}/${currentAd}`, '_blank');
-                }
-            });
+        function closeMenu() {
+            menuPanel.classList.remove('open');
+            menuOverlay.classList.remove('open');
+        }
+
+        function refresh() {
+            if (currentAdId) adFrame.src = adFrame.src;
+        }
+
+        function rotate() {
+            isLandscape = !isLandscape;
+            updateDeviceSize();
+            updateUrl();
+        }
+
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href);
+            showToast('링크가 복사되었습니다!');
+        }
+
+        function openFullscreen() {
+            const opt = adSelect.selectedOptions[0];
+            if (opt?.dataset.path) window.open(`${PUBLIC_URL}/${opt.dataset.path}`, '_blank');
         }
 
         function loadAdPreview() {
-            if (!currentAd) return;
-
-            const adUrl = `${PUBLIC_URL}/${currentAd}`;
-            adFrame.src = adUrl;
-            adFrame.style.display = 'block';
-            emptyState.style.display = 'none';
+            const opt = adSelect.selectedOptions[0];
+            if (opt?.dataset.path) {
+                adFrame.src = `${PUBLIC_URL}/${opt.dataset.path}`;
+                adFrame.style.display = 'block';
+                emptyState.style.display = 'none';
+                if (opt.dataset.filename) document.title = opt.dataset.filename;
+            }
         }
 
         function hidePreview() {
             adFrame.style.display = 'none';
             adFrame.src = '';
             emptyState.style.display = 'flex';
+            document.title = 'Playable Ad Preview';
         }
 
         function updateDeviceSize() {
-            const device = devices[currentDevice];
-            if (!device) return;
+            const d = devices[currentDevice];
+            if (!d) return;
 
-            let width = device.width;
-            let height = device.height;
+            let w = d.width, h = d.height;
+            if (isLandscape) [w, h] = [h, w];
 
-            if (isLandscape) {
-                [width, height] = [height, width];
-            }
+            const maxH = window.innerHeight - 32;
+            const maxW = window.innerWidth - 100;
+            let scale = Math.min(maxH / h, maxW / w, 1);
 
-            const maxHeight = window.innerHeight - 200;
-            const maxWidth = window.innerWidth - 100;
-            
-            let scale = 1;
-            if (height > maxHeight) {
-                scale = maxHeight / height;
-            }
-            if (width * scale > maxWidth) {
-                scale = maxWidth / width;
-            }
-
-            deviceFrame.style.width = `${width * scale}px`;
-            deviceFrame.style.height = `${height * scale}px`;
-
-            updateLinkDisplay();
+            deviceFrame.style.width = `${w * scale}px`;
+            deviceFrame.style.height = `${h * scale}px`;
         }
 
         function updateUrl() {
             const params = new URLSearchParams();
-            
-            if (currentGame) params.set('game', currentGame);
-            if (currentAd) params.set('ad', currentAd);
-            if (currentDevice !== 'iphone-14') params.set('device', currentDevice);
+            if (currentAdId) params.set('id', currentAdId);
+            if (currentDevice !== 'iphone-15-pro-max') params.set('device', currentDevice);
             if (isLandscape) params.set('rotate', 'landscape');
-
-            const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
-            window.history.replaceState({}, '', newUrl);
-            
-            updateLinkDisplay();
+            history.replaceState({}, '', params.toString() ? `?${params}` : location.pathname);
         }
 
-        function updateLinkDisplay() {
-            currentLinkEl.textContent = window.location.href;
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
         }
-
-        function showToast(message) {
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
-        }
-
-        window.addEventListener('resize', () => {
-            updateDeviceSize();
-        });
 
         init();
     </script>
