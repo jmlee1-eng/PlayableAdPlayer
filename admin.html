@@ -48,23 +48,8 @@
         .btn-danger:hover { background: #b91c1c; }
         .btn-primary { background: #2563eb; border-color: #2563eb; }
         .btn-primary:hover { background: #1d4ed8; }
-
-        .sort-controls {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin-left: auto;
-            font-size: 13px;
-            color: #888;
-        }
-        .sort-controls select {
-            background: #333;
-            border: 1px solid #444;
-            color: #fff;
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 13px;
-        }
+        .btn-success { background: #059669; border-color: #059669; }
+        .btn-success:hover { background: #047857; }
 
         .breadcrumb {
             display: flex;
@@ -126,14 +111,13 @@
         .file-name:hover { color: #60a5fa; }
         .file-meta { font-size: 12px; color: #666; }
         .file-id { font-size: 11px; color: #555; font-family: monospace; }
-        .file-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .file-actions { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
         .file-actions .btn { padding: 6px 10px; font-size: 12px; }
 
         .checkbox { width: 18px; height: 18px; margin-right: 12px; cursor: pointer; flex-shrink: 0; }
 
         .empty-state { text-align: center; padding: 48px; color: #666; }
 
-        /* Modal */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -166,7 +150,6 @@
         .modal input:focus { outline: none; border-color: #2563eb; }
         .modal-actions { display: flex; gap: 12px; justify-content: flex-end; }
 
-        /* Toast */
         .toast {
             position: fixed;
             bottom: 24px;
@@ -195,19 +178,8 @@
     <div class="container">
         <div class="toolbar">
             <button class="btn" onclick="showFolderModal()">📁 새 폴더</button>
+            <button class="btn btn-success" onclick="assignMissingIds()">🔧 ID 일괄 생성</button>
             <button class="btn btn-danger" id="deleteBtn" style="display:none;" onclick="deleteSelected()">🗑️ 선택 삭제</button>
-            <div class="sort-controls">
-                <span>폴더:</span>
-                <select id="folderSort" onchange="renderFiles()">
-                    <option value="asc">오름차순</option>
-                    <option value="desc">내림차순</option>
-                </select>
-                <span>파일:</span>
-                <select id="fileSort" onchange="renderFiles()">
-                    <option value="asc">오름차순</option>
-                    <option value="desc" selected>내림차순</option>
-                </select>
-            </div>
         </div>
 
         <div class="breadcrumb" id="breadcrumb">
@@ -222,7 +194,6 @@
         </div>
     </div>
 
-    <!-- Folder Modal -->
     <div class="modal-overlay" id="folderModal">
         <div class="modal">
             <h2>📁 새 폴더 만들기</h2>
@@ -234,7 +205,6 @@
         </div>
     </div>
 
-    <!-- Rename Modal -->
     <div class="modal-overlay" id="renameModal">
         <div class="modal">
             <h2>✏️ 이름 변경</h2>
@@ -265,19 +235,12 @@
 
         function setupDragDrop() {
             const dropZone = document.getElementById('dropZone');
-            
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(e => {
                 dropZone.addEventListener(e, ev => { ev.preventDefault(); ev.stopPropagation(); });
                 document.body.addEventListener(e, ev => { ev.preventDefault(); ev.stopPropagation(); });
             });
-
-            ['dragenter', 'dragover'].forEach(e => {
-                dropZone.addEventListener(e, () => dropZone.classList.add('dragover'));
-            });
-            ['dragleave', 'drop'].forEach(e => {
-                dropZone.addEventListener(e, () => dropZone.classList.remove('dragover'));
-            });
-
+            ['dragenter', 'dragover'].forEach(e => dropZone.addEventListener(e, () => dropZone.classList.add('dragover')));
+            ['dragleave', 'drop'].forEach(e => dropZone.addEventListener(e, () => dropZone.classList.remove('dragover')));
             dropZone.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
         }
 
@@ -296,7 +259,6 @@
                     const formData = new FormData();
                     formData.append('file', file);
                     formData.append('path', currentPath + file.name);
-
                     const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: formData });
                     if (res.ok) {
                         div.className = 'upload-item success';
@@ -307,7 +269,6 @@
                     div.innerHTML = `<span>${file.name}</span><span>✗ 실패</span>`;
                 }
             }
-
             setTimeout(() => { progress.style.display = 'none'; loadFiles(); }, 1500);
             showToast('업로드 완료!', 'success');
         }
@@ -324,8 +285,6 @@
 
         function renderFiles() {
             const fileList = document.getElementById('fileList');
-            const folderSort = document.getElementById('folderSort').value;
-            const fileSort = document.getElementById('fileSort').value;
 
             if (allFiles.length === 0) {
                 fileList.innerHTML = '<div class="empty-state">파일이 없습니다<br><small style="color:#555">위 영역에 파일을 드래그하여 업로드하세요</small></div>';
@@ -345,11 +304,8 @@
 
             let html = '';
 
-            // 폴더 정렬
-            let sortedFolders = Array.from(folders).sort();
-            if (folderSort === 'desc') sortedFolders.reverse();
-
-            sortedFolders.forEach(folder => {
+            // 폴더
+            Array.from(folders).sort().forEach(folder => {
                 html += `
                     <div class="file-item">
                         <input type="checkbox" class="checkbox" onchange="toggleSelect('${currentPath}${folder}/', this)">
@@ -365,14 +321,14 @@
                     </div>`;
             });
 
-            // 파일 정렬
-            let sortedFiles = fileItems.sort((a, b) => a.key.localeCompare(b.key));
-            if (fileSort === 'desc') sortedFiles.reverse();
-
-            sortedFiles.forEach(file => {
+            // 파일
+            fileItems.sort((a, b) => a.key.localeCompare(b.key)).forEach(file => {
                 const fileName = file.key.split('/').pop();
                 const size = formatSize(file.size);
-                const id = file.id || 'N/A';
+                const id = file.id || '';
+                const hasId = id ? 'ID: ' + id : '<span style="color:#f59e0b">ID 없음</span>';
+                const previewLink = id ? `index.html?id=${id}` : `index.html?id=${encodeURIComponent(file.key)}`;
+                
                 html += `
                     <div class="file-item">
                         <input type="checkbox" class="checkbox" onchange="toggleSelect('${file.key}', this)">
@@ -380,11 +336,12 @@
                         <div class="file-info">
                             <div class="file-name" onclick="window.open('${PUBLIC_URL}/${file.key}', '_blank')">${fileName}</div>
                             <div class="file-meta">${size}</div>
-                            <div class="file-id">ID: ${id}</div>
+                            <div class="file-id">${hasId}</div>
                         </div>
                         <div class="file-actions">
+                            <button class="btn btn-primary" onclick="window.open('${previewLink}', '_blank')">미리보기</button>
                             <button class="btn" onclick="showRenameModal('${file.key}', '${fileName}', 'file')">이름 변경</button>
-                            <button class="btn" onclick="copyIdLink('${id}')">ID 링크</button>
+                            ${id ? `<button class="btn" onclick="copyIdLink('${id}')">ID 링크</button>` : ''}
                         </div>
                     </div>`;
             });
@@ -395,18 +352,13 @@
             updateDeleteBtn();
         }
 
-        function navigateTo(path) {
-            currentPath = path;
-            loadFiles();
-        }
+        function navigateTo(path) { currentPath = path; loadFiles(); }
 
         function updateBreadcrumb() {
             let html = '<a href="#" onclick="navigateTo(\'\')">🏠 Root</a>';
             if (currentPath) {
-                const parts = currentPath.split('/').filter(p => p);
-                let path = '';
-                parts.forEach(part => {
-                    path += part + '/';
+                currentPath.split('/').filter(p => p).forEach((part, i, arr) => {
+                    const path = arr.slice(0, i + 1).join('/') + '/';
                     html += ` <span>/</span> <a href="#" onclick="navigateTo('${path}')">${part}</a>`;
                 });
             }
@@ -450,6 +402,28 @@
             } catch { showToast('삭제 실패', 'error'); }
         }
 
+        // ID 없는 파일에 일괄 ID 생성
+        async function assignMissingIds() {
+            const filesWithoutId = allFiles.filter(f => !f.id && !f.key.endsWith('/') && !f.key.endsWith('.keep'));
+            if (filesWithoutId.length === 0) {
+                showToast('모든 파일에 ID가 있습니다!', 'success');
+                return;
+            }
+            if (!confirm(`${filesWithoutId.length}개 파일에 ID를 생성하시겠습니까?`)) return;
+            
+            showToast('ID 생성 중...', '');
+            
+            try {
+                await fetch(`${API_URL}/assign-ids`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ files: filesWithoutId.map(f => f.key) })
+                });
+                showToast('ID 생성 완료!', 'success');
+                loadFiles();
+            } catch { showToast('ID 생성 실패', 'error'); }
+        }
+
         function showFolderModal() {
             document.getElementById('folderModal').classList.add('show');
             document.getElementById('folderName').value = '';
@@ -464,9 +438,7 @@
             document.getElementById('newName').focus();
         }
 
-        function hideModal(id) {
-            document.getElementById(id).classList.remove('show');
-        }
+        function hideModal(id) { document.getElementById(id).classList.remove('show'); }
 
         async function createFolder() {
             const name = document.getElementById('folderName').value.trim();
@@ -501,16 +473,14 @@
         }
 
         function copyIdLink(id) {
-            if (id === 'N/A') { showToast('ID가 없습니다', 'error'); return; }
-            const link = `${location.origin}${location.pathname.replace('admin.html', '')}?id=${id}`;
+            const link = `${location.origin}${location.pathname.replace('admin.html', '')}index.html?id=${id}`;
             navigator.clipboard.writeText(link);
             showToast('ID 링크가 복사되었습니다!', 'success');
         }
 
         function formatSize(bytes) {
             if (!bytes) return '0 B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const k = 1024, sizes = ['B', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }

@@ -2,34 +2,26 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Playable Ad Preview</title>
     <link rel="icon" type="image/png" href="playableplayer.png">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: #1a1a1a;
-            height: 100vh;
+            height: 100%;
             overflow: hidden;
             color: #fff;
+        }
+
+        .preview-wrapper {
             display: flex;
             justify-content: center;
             align-items: center;
-        }
-
-        /* 디바이스 + 툴바를 감싸는 컨테이너 */
-        .preview-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            height: calc(100vh - 32px);
+            height: 100%;
             padding: 16px;
+            gap: 12px;
         }
 
         .device-frame {
@@ -58,19 +50,9 @@
             text-align: center;
             padding: 40px;
         }
+        .empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.5; }
+        .empty-state p { font-size: 13px; }
 
-        .empty-state svg {
-            width: 48px;
-            height: 48px;
-            margin-bottom: 12px;
-            opacity: 0.5;
-        }
-
-        .empty-state p {
-            font-size: 13px;
-        }
-
-        /* 툴바 - 디바이스 바로 옆에 고정 */
         .toolbar {
             display: flex;
             flex-direction: column;
@@ -95,24 +77,16 @@
             justify-content: center;
             transition: all 0.2s;
         }
+        .toolbar-btn:hover { background: #444; border-color: #555; }
+        .toolbar-btn svg { width: 20px; height: 20px; }
 
-        .toolbar-btn:hover {
-            background: #444;
-            border-color: #555;
-        }
-
-        .toolbar-btn svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        /* 메뉴 패널 */
+        /* 메뉴 패널 - 오버레이 없음 */
         .menu-panel {
             position: fixed;
             top: 0;
             right: -320px;
             width: 320px;
-            height: 100vh;
+            height: 100%;
             background: #222;
             border-left: 1px solid #333;
             transition: right 0.3s ease;
@@ -120,10 +94,7 @@
             display: flex;
             flex-direction: column;
         }
-
-        .menu-panel.open {
-            right: 0;
-        }
+        .menu-panel.open { right: 0; }
 
         .menu-header {
             display: flex;
@@ -132,45 +103,24 @@
             padding: 16px;
             border-bottom: 1px solid #333;
         }
-
-        .menu-header h2 {
-            font-size: 16px;
-            font-weight: 500;
-        }
-
+        .menu-header h2 { font-size: 16px; font-weight: 500; }
         .menu-close {
-            width: 32px;
-            height: 32px;
-            background: none;
-            border: none;
-            color: #888;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 32px; height: 32px;
+            background: none; border: none;
+            color: #888; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
         }
+        .menu-close:hover { color: #fff; }
 
-        .menu-close:hover {
-            color: #fff;
-        }
+        .menu-content { flex: 1; overflow-y: auto; padding: 16px; }
 
-        .menu-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-        }
-
-        .menu-section {
-            margin-bottom: 20px;
-        }
-
+        .menu-section { margin-bottom: 20px; }
         .menu-section label {
             display: block;
             font-size: 12px;
             color: #888;
             margin-bottom: 6px;
         }
-
         .menu-section select {
             width: 100%;
             background: #333;
@@ -181,18 +131,29 @@
             font-size: 14px;
             cursor: pointer;
         }
+        .menu-section select:focus { outline: none; border-color: #2563eb; }
 
-        .menu-section select:focus {
-            outline: none;
-            border-color: #2563eb;
-        }
-
-        .menu-actions {
+        .sort-row {
             display: flex;
-            flex-direction: column;
-            gap: 6px;
+            gap: 8px;
+            align-items: center;
+        }
+        .sort-row select {
+            flex: 1;
+            background: #333;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .sort-row span {
+            font-size: 12px;
+            color: #888;
+            white-space: nowrap;
         }
 
+        .menu-actions { display: flex; flex-direction: column; gap: 6px; }
         .menu-action-btn {
             display: flex;
             align-items: center;
@@ -207,37 +168,9 @@
             font-size: 14px;
             transition: all 0.2s;
         }
+        .menu-action-btn:hover { background: #444; }
+        .menu-action-btn svg { width: 20px; height: 20px; opacity: 0.7; }
 
-        .menu-action-btn:hover {
-            background: #444;
-        }
-
-        .menu-action-btn svg {
-            width: 20px;
-            height: 20px;
-            opacity: 0.7;
-        }
-
-        /* 오버레이 */
-        .menu-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s;
-            z-index: 999;
-        }
-
-        .menu-overlay.open {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        /* 토스트 */
         .toast {
             position: fixed;
             bottom: 24px;
@@ -252,28 +185,13 @@
             transition: all 0.3s;
             z-index: 1001;
         }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
         @media (max-width: 600px) {
-            .preview-wrapper {
-                gap: 8px;
-                padding: 8px;
-            }
-            .toolbar {
-                padding: 6px;
-            }
-            .toolbar-btn {
-                width: 36px;
-                height: 36px;
-            }
-            .toolbar-btn svg {
-                width: 18px;
-                height: 18px;
-            }
+            .preview-wrapper { gap: 8px; padding: 8px; }
+            .toolbar { padding: 6px; }
+            .toolbar-btn { width: 36px; height: 36px; }
+            .toolbar-btn svg { width: 18px; height: 18px; }
         }
     </style>
 </head>
@@ -301,8 +219,10 @@
                 </svg>
             </button>
             <button class="toolbar-btn" id="rotateBtn" title="화면 회전">
+                <!-- 회전 아이콘 - 폰 모양 -->
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m0 0a8.001 8.001 0 0115.356 2M4.582 9H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    <rect x="7" y="4" width="10" height="16" rx="2" stroke-width="1.5" transform="rotate(45 12 12)"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 9l-2 2 2 2M20 11l2 2-2 2" />
                 </svg>
             </button>
             <button class="toolbar-btn" id="copyBtn" title="링크 복사">
@@ -324,8 +244,7 @@
         </div>
     </div>
 
-    <div class="menu-overlay" id="menuOverlay"></div>
-
+    <!-- 메뉴 패널 (오버레이 제거) -->
     <div class="menu-panel" id="menuPanel">
         <div class="menu-header">
             <h2>메뉴</h2>
@@ -337,19 +256,15 @@
         </div>
         <div class="menu-content">
             <div class="menu-section">
-                <label>Game (게임 드롭다운)</label>
-                <select id="gameSelect">
-                    <option value="">Loading...</option>
-                </select>
+                <label>Game</label>
+                <select id="gameSelect"><option value="">Loading...</option></select>
             </div>
             <div class="menu-section">
-                <label>AD (소재 파일 드롭다운)</label>
-                <select id="adSelect" disabled>
-                    <option value="">Select Ad</option>
-                </select>
+                <label>AD</label>
+                <select id="adSelect" disabled><option value="">Select Ad</option></select>
             </div>
             <div class="menu-section">
-                <label>Device (기기 드롭다운)</label>
+                <label>Device</label>
                 <select id="deviceSelect">
                     <option value="iphone-se-3">iPhone SE 3</option>
                     <option value="iphone-15-pro-max" selected>iPhone 15 Pro Max</option>
@@ -361,6 +276,23 @@
                 </select>
             </div>
             <div class="menu-section">
+                <label>Sort</label>
+                <div class="sort-row">
+                    <span>폴더</span>
+                    <select id="folderSort">
+                        <option value="asc">오름차순</option>
+                        <option value="desc">내림차순</option>
+                    </select>
+                </div>
+                <div class="sort-row" style="margin-top:8px;">
+                    <span>파일</span>
+                    <select id="fileSort">
+                        <option value="asc">오름차순</option>
+                        <option value="desc" selected>내림차순</option>
+                    </select>
+                </div>
+            </div>
+            <div class="menu-section">
                 <label>Actions</label>
                 <div class="menu-actions">
                     <button class="menu-action-btn" id="menuRefreshBtn">
@@ -368,7 +300,10 @@
                         새로 고침
                     </button>
                     <button class="menu-action-btn" id="menuRotateBtn">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m0 0a8.001 8.001 0 0115.356 2M4.582 9H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <rect x="7" y="4" width="10" height="16" rx="2" stroke-width="1.5" transform="rotate(45 12 12)"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 9l-2 2 2 2M20 11l2 2-2 2" />
+                        </svg>
                         화면 회전
                     </button>
                     <button class="menu-action-btn" id="menuCopyBtn">
@@ -417,7 +352,8 @@
         const adFrame = document.getElementById('adFrame');
         const emptyState = document.getElementById('emptyState');
         const menuPanel = document.getElementById('menuPanel');
-        const menuOverlay = document.getElementById('menuOverlay');
+        const folderSortSelect = document.getElementById('folderSort');
+        const fileSortSelect = document.getElementById('fileSort');
 
         async function init() {
             await loadFiles();
@@ -429,30 +365,25 @@
         async function loadFiles() {
             gameSelect.innerHTML = '<option value="">Loading...</option>';
             try {
-                const response = await fetch(`${API_URL}/list`);
-                allFiles = await response.json();
+                const res = await fetch(`${API_URL}/list`);
+                allFiles = await res.json();
                 
                 fileIdMap = {};
-                allFiles.forEach(file => {
-                    if (file.id) fileIdMap[file.id] = file;
-                });
+                allFiles.forEach(f => { if (f.id) fileIdMap[f.id] = f; });
                 
                 const games = new Set();
-                allFiles.forEach(file => {
-                    const parts = file.key.split('/');
+                allFiles.forEach(f => {
+                    const parts = f.key.split('/');
                     if (parts.length > 1 && parts[0]) games.add(parts[0]);
                 });
 
                 gameSelect.innerHTML = '<option value="">Select Game</option>';
-                Array.from(games).sort().forEach(game => {
+                Array.from(games).sort().forEach(g => {
                     const opt = document.createElement('option');
-                    opt.value = game;
-                    opt.textContent = game;
+                    opt.value = g; opt.textContent = g;
                     gameSelect.appendChild(opt);
                 });
-            } catch (e) {
-                gameSelect.innerHTML = '<option value="">Error</option>';
-            }
+            } catch { gameSelect.innerHTML = '<option value="">Error</option>'; }
         }
 
         function loadAds(gameName) {
@@ -462,29 +393,37 @@
                 return;
             }
 
+            const folderSort = folderSortSelect.value;
+            const fileSort = fileSortSelect.value;
+
             const folders = new Map();
-            allFiles.forEach(file => {
-                if (file.key.startsWith(gameName + '/')) {
-                    const rel = file.key.slice(gameName.length + 1);
+            allFiles.forEach(f => {
+                if (f.key.startsWith(gameName + '/')) {
+                    const rel = f.key.slice(gameName.length + 1);
                     const parts = rel.split('/');
                     if (parts.length >= 2 && parts[1].endsWith('.html')) {
                         if (!folders.has(parts[0])) folders.set(parts[0], []);
                         folders.get(parts[0]).push({ 
                             fileName: parts[1], 
-                            fullPath: file.key,
-                            id: file.id || file.key
+                            fullPath: f.key,
+                            id: f.id || f.key
                         });
                     }
                 }
             });
 
             adSelect.innerHTML = '<option value="">Select Ad</option>';
-            const sortedFolders = Array.from(folders.keys()).sort().reverse();
+            
+            let sortedFolders = Array.from(folders.keys()).sort();
+            if (folderSort === 'desc') sortedFolders.reverse();
             
             sortedFolders.forEach(folder => {
                 const group = document.createElement('optgroup');
                 group.label = `📁 ${folder}`;
-                const files = folders.get(folder).sort((a, b) => a.fileName.localeCompare(b.fileName));
+                
+                let files = folders.get(folder).sort((a, b) => a.fileName.localeCompare(b.fileName));
+                if (fileSort === 'desc') files.reverse();
+                
                 files.forEach(f => {
                     const opt = document.createElement('option');
                     opt.value = f.id;
@@ -499,7 +438,7 @@
         }
 
         function parseUrlParams() {
-            const params = new URLSearchParams(window.location.search);
+            const params = new URLSearchParams(location.search);
             const adId = params.get('id');
             const device = params.get('device');
             const rotate = params.get('rotate');
@@ -510,44 +449,57 @@
             }
             if (rotate === 'landscape') isLandscape = true;
 
-            if (adId && fileIdMap[adId]) {
-                const file = fileIdMap[adId];
-                const game = file.key.split('/')[0];
-                gameSelect.value = game;
-                loadAds(game);
-                currentAdId = adId;
-                adSelect.value = adId;
-                loadAdPreview();
+            if (adId) {
+                // ID로 찾기 또는 경로로 찾기
+                let file = fileIdMap[adId];
+                if (!file) {
+                    // ID가 없는 파일은 경로로 찾기
+                    file = allFiles.find(f => f.key === adId || f.id === adId);
+                }
+                if (file) {
+                    const game = file.key.split('/')[0];
+                    gameSelect.value = game;
+                    loadAds(game);
+                    currentAdId = file.id || file.key;
+                    adSelect.value = currentAdId;
+                    loadAdPreview();
+                }
             }
             updateDeviceSize();
         }
 
         function setupEventListeners() {
-            document.getElementById('menuBtn').addEventListener('click', () => {
-                menuPanel.classList.add('open');
-                menuOverlay.classList.add('open');
-            });
-            document.getElementById('menuClose').addEventListener('click', closeMenu);
-            menuOverlay.addEventListener('click', closeMenu);
+            document.getElementById('menuBtn').addEventListener('click', () => menuPanel.classList.add('open'));
+            document.getElementById('menuClose').addEventListener('click', () => menuPanel.classList.remove('open'));
 
-            gameSelect.addEventListener('change', (e) => {
+            gameSelect.addEventListener('change', e => {
                 loadAds(e.target.value);
                 currentAdId = '';
                 hidePreview();
                 updateUrl();
             });
 
-            adSelect.addEventListener('change', (e) => {
+            adSelect.addEventListener('change', e => {
                 currentAdId = e.target.value;
                 if (currentAdId) loadAdPreview();
                 else hidePreview();
                 updateUrl();
             });
 
-            deviceSelect.addEventListener('change', (e) => {
+            deviceSelect.addEventListener('change', e => {
                 currentDevice = e.target.value;
                 updateDeviceSize();
                 updateUrl();
+            });
+
+            folderSortSelect.addEventListener('change', () => {
+                const game = gameSelect.value;
+                if (game) loadAds(game);
+            });
+
+            fileSortSelect.addEventListener('change', () => {
+                const game = gameSelect.value;
+                if (game) loadAds(game);
             });
 
             document.getElementById('refreshBtn').addEventListener('click', refresh);
@@ -556,23 +508,16 @@
             document.getElementById('fullscreenBtn').addEventListener('click', openFullscreen);
             document.getElementById('adminBtn').addEventListener('click', () => location.href = 'admin.html');
 
-            document.getElementById('menuRefreshBtn').addEventListener('click', () => { refresh(); closeMenu(); });
-            document.getElementById('menuRotateBtn').addEventListener('click', () => { rotate(); closeMenu(); });
-            document.getElementById('menuCopyBtn').addEventListener('click', () => { copyLink(); closeMenu(); });
-            document.getElementById('menuFullscreenBtn').addEventListener('click', () => { openFullscreen(); closeMenu(); });
+            document.getElementById('menuRefreshBtn').addEventListener('click', () => { refresh(); menuPanel.classList.remove('open'); });
+            document.getElementById('menuRotateBtn').addEventListener('click', () => { rotate(); menuPanel.classList.remove('open'); });
+            document.getElementById('menuCopyBtn').addEventListener('click', () => { copyLink(); menuPanel.classList.remove('open'); });
+            document.getElementById('menuFullscreenBtn').addEventListener('click', () => { openFullscreen(); menuPanel.classList.remove('open'); });
             document.getElementById('menuAdminBtn').addEventListener('click', () => location.href = 'admin.html');
 
             window.addEventListener('resize', updateDeviceSize);
         }
 
-        function closeMenu() {
-            menuPanel.classList.remove('open');
-            menuOverlay.classList.remove('open');
-        }
-
-        function refresh() {
-            if (currentAdId) adFrame.src = adFrame.src;
-        }
+        function refresh() { if (currentAdId) adFrame.src = adFrame.src; }
 
         function rotate() {
             isLandscape = !isLandscape;
@@ -581,7 +526,7 @@
         }
 
         function copyLink() {
-            navigator.clipboard.writeText(window.location.href);
+            navigator.clipboard.writeText(location.href);
             showToast('링크가 복사되었습니다!');
         }
 
@@ -614,9 +559,13 @@
             let w = d.width, h = d.height;
             if (isLandscape) [w, h] = [h, w];
 
+            // 항상 화면 높이에 맞춤 (상하 꽉 참)
             const maxH = window.innerHeight - 32;
             const maxW = window.innerWidth - 100;
-            let scale = Math.min(maxH / h, maxW / w, 1);
+            
+            // 높이 기준으로 스케일 계산 후, 너비 초과 시 조정
+            let scale = maxH / h;
+            if (w * scale > maxW) scale = maxW / w;
 
             deviceFrame.style.width = `${w * scale}px`;
             deviceFrame.style.height = `${h * scale}px`;
